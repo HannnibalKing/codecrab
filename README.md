@@ -11,6 +11,9 @@ CodeCrab is a lightweight task-tracking and project status dashboard designed to
 - Persist tasks in browser local storage
 - Responsive layout for desktop and mobile
 - Empty-state handling for a clean first-run experience
+- Validated API payloads with unique task ids
+- Atomic JSON writes to avoid partial task files
+- Health endpoint for deployment checks: `GET /api/tasks?health=1`
 
 ## Run locally
 
@@ -57,6 +60,9 @@ A matching Node API is included in `server.js`, which exposes:
 
 - `GET /api/tasks`
 - `PUT /api/tasks`
+- `GET /api/tasks?health=1`
+
+The API accepts task objects with a string `id`, non-empty `text` up to 120 characters, and boolean `completed`. Invalid shapes and duplicate ids return `400`.
 
 Example frontend adapter:
 
