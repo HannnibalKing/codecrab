@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeCrab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Project Dashboard</p>
+          <h1>CodeCrab</h1>
+        </div>
+        <button id="clear-completed" class="ghost-button" type="button">Clear completed</button>
+      </header>
+
+      <main class="dashboard">
+        <section class="panel summary-panel">
+          <div class="stat">
+            <span class="label">Total</span>
+            <strong id="total-count">0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">Active</span>
+            <strong id="active-count">0</strong>
+          </div>
+          <div class="stat">
+            <span class="label">Completed</span>
+            <strong id="completed-count">0</strong>
+          </div>
+        </section>
+
+        <section class="panel composer-panel">
+          <form id="task-form">
+            <label for="task-input" class="sr-only">New task</label>
+            <input
+              id="task-input"
+              type="text"
+              maxlength="120"
+              placeholder="Add a task for this project..."
+              autocomplete="off"
+            />
+            <button type="submit">Add task</button>
+          </form>
+        </section>
+
+        <section class="panel tasks-panel">
+          <div class="toolbar">
+            <div class="filter-group" aria-label="Filter tasks">
+              <button class="filter active" data-filter="all" type="button">All</button>
+              <button class="filter" data-filter="active" type="button">Active</button>
+              <button class="filter" data-filter="completed" type="button">Completed</button>
+            </div>
+          </div>
+
+          <div id="empty-state" class="empty-state" hidden>
+            No tasks yet. Add your first project item above.
+          </div>
+
+          <ul id="task-list" class="task-list" aria-live="polite"></ul>
+        </section>
+      </main>
+    </div>
+
+    <template id="task-template">
+      <li class="task-item">
+        <label class="task-check">
+          <input type="checkbox" />
+          <span class="checkmark"></span>
+        </label>
+        <span class="task-text"></span>
+        <button class="delete-button" type="button" aria-label="Delete task">Delete</button>
+      </li>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
