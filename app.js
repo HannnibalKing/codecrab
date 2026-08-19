@@ -10,7 +10,7 @@ const completedCount = document.getElementById('completed-count');
 const filterButtons = [...document.querySelectorAll('.filter')];
 const clearCompletedButton = document.getElementById('clear-completed');
 
-const databaseHook = window.CodeCrabDB || {
+const fallbackLocalStorageAdapter = {
   read() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -37,17 +37,68 @@ const databaseHook = window.CodeCrabDB || {
   },
 };
 
-let tasks = loadTasks();
+const databaseHook = window.CodeCrabDB || {
+  async read() {
+    try {
+      const response = await fetch('/api/tasks');
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.warn('API unavailable, using local storage fallback:', error);
+      return fallbackLocalStorageAdapter.read();
+    }
+  },
+  async write(nextTasks) {
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextTasks),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Save failed with status ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.warn('API write failed, using local storage fallback:', error);
+      fallbackLocalStorageAdapter.write(nextTasks);
+      return nextTasks;
+    }
+  },
+  async sync(tasks) {
+    return this.write(tasks);
+  },
+};
+
+let tasks = [];
 let activeFilter = 'all';
 
-function loadTasks() {
-  const fromDatabase = databaseHook.read();
-  return Array.isArray(fromDatabase) ? fromDatabase : [];
+async function loadTasks() {
+  try {
+    const fromDatabase = await Promise.resolve(databaseHook.read());
+    tasks = Array.isArray(fromDatabase) ? fromDatabase : [];
+  } catch (error) {
+    console.warn('Falling back to local storage:', error);
+    tasks = fallbackLocalStorageAdapter.read();
+  }
+
+  if (!tasks.length) {
+    tasks = [
+      { id: crypto.randomUUID(), text: 'Set project milestones', completed: false },
+      { id: crypto.randomUUID(), text: 'Review build checklist', completed: true },
+      { id: crypto.randomUUID(), text: 'Prepare demo handoff', completed: false },
+    ];
+  }
+
+  render();
 }
 
 function saveTasks() {
-  databaseHook.write(tasks);
-  Promise.resolve(databaseHook.sync(tasks)).catch(error => {
+  Promise.resolve(databaseHook.write(tasks)).catch(error => {
     console.warn('Background sync skipped:', error);
   });
 }

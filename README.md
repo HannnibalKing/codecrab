@@ -17,6 +17,18 @@ CodeCrab is a lightweight task-tracking and project status dashboard designed to
 From the project folder:
 
 ```bash
+node server.js
+```
+
+Then open:
+
+```text
+http://localhost:3000
+```
+
+For a static-only fallback, you can still run:
+
+```bash
 python -m http.server 8000
 ```
 
@@ -41,21 +53,27 @@ This project is now in a clean, usable, and testable state. It includes the core
 
 The app is designed to support a future backend without forcing a rewrite. A `window.CodeCrabDB` adapter can be attached later with `read()`, `write(tasks)`, and `sync(tasks)` methods. If no adapter is present, the app falls back to browser local storage automatically.
 
-Example:
+A matching Node API is included in `server.js`, which exposes:
+
+- `GET /api/tasks`
+- `PUT /api/tasks`
+
+Example frontend adapter:
 
 ```js
 window.CodeCrabDB = {
-  read() {
-    return fetch('/api/tasks').then(res => res.json());
+  async read() {
+    const response = await fetch('/api/tasks');
+    return response.json();
   },
-  write(tasks) {
+  async write(tasks) {
     return fetch('/api/tasks', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tasks),
     });
   },
-  sync(tasks) {
+  async sync(tasks) {
     return this.write(tasks);
   },
 };

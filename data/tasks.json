@@ -1,0 +1,17 @@
+[
+  {
+    "id": "seed-1",
+    "text": "Set project milestones",
+    "completed": false
+  },
+  {
+    "id": "seed-2",
+    "text": "Review build checklist",
+    "completed": true
+  },
+  {
+    "id": "seed-3",
+    "text": "Prepare demo handoff",
+    "completed": false
+  }
+]
