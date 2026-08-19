@@ -10,30 +10,46 @@ const completedCount = document.getElementById('completed-count');
 const filterButtons = [...document.querySelectorAll('.filter')];
 const clearCompletedButton = document.getElementById('clear-completed');
 
+const databaseHook = window.CodeCrabDB || {
+  read() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        return [
+          { id: crypto.randomUUID(), text: 'Set project milestones', completed: false },
+          { id: crypto.randomUUID(), text: 'Review build checklist', completed: true },
+          { id: crypto.randomUUID(), text: 'Prepare demo handoff', completed: false },
+        ];
+      }
+
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+      return [];
+    }
+  },
+  write(nextTasks) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextTasks));
+  },
+  sync() {
+    return Promise.resolve();
+  },
+};
+
 let tasks = loadTasks();
 let activeFilter = 'all';
 
 function loadTasks() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) {
-      return [
-        { id: crypto.randomUUID(), text: 'Set project milestones', completed: false },
-        { id: crypto.randomUUID(), text: 'Review build checklist', completed: true },
-        { id: crypto.randomUUID(), text: 'Prepare demo handoff', completed: false },
-      ];
-    }
-
-    const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    console.error('Failed to load tasks:', error);
-    return [];
-  }
+  const fromDatabase = databaseHook.read();
+  return Array.isArray(fromDatabase) ? fromDatabase : [];
 }
 
 function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  databaseHook.write(tasks);
+  Promise.resolve(databaseHook.sync(tasks)).catch(error => {
+    console.warn('Background sync skipped:', error);
+  });
 }
 
 function renderStats() {

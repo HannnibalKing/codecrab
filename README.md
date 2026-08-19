@@ -37,6 +37,32 @@ http://localhost:8000
 
 This project is now in a clean, usable, and testable state. It includes the core workflow, visible project stats, responsive styling, local persistence, and a polished empty-state experience.
 
+## Future database hook
+
+The app is designed to support a future backend without forcing a rewrite. A `window.CodeCrabDB` adapter can be attached later with `read()`, `write(tasks)`, and `sync(tasks)` methods. If no adapter is present, the app falls back to browser local storage automatically.
+
+Example:
+
+```js
+window.CodeCrabDB = {
+  read() {
+    return fetch('/api/tasks').then(res => res.json());
+  },
+  write(tasks) {
+    return fetch('/api/tasks', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tasks),
+    });
+  },
+  sync(tasks) {
+    return this.write(tasks);
+  },
+};
+```
+
+This keeps the current app working while preparing for a real database-backed version later.
+
 ## Completion checklist
 
 - [x] App loads from a browser
